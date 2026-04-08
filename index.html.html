@@ -1,0 +1,302 @@
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #fafafa; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #003A70 0%, #00275c 60%, #1a1a2e 100%); color: white; padding: 28px 32px 22px; }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .header .subtitle { margin-top: 6px; font-size: 14px; color: #b0c4de; font-weight: 400; }
+  .tracker { background: rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 16px; text-align: center; backdrop-filter: blur(8px); }
+  .tracker .num { font-size: 22px; font-weight: 700; }
+  .tracker .den { font-size: 14px; font-weight: 400; color: #b0c4de; }
+  .tracker .lbl { font-size: 11px; color: #b0c4de; margin-top: 2px; }
+  .progress-track { margin-top: 16px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
+  .progress-fill { height: 4px; background: linear-gradient(90deg, #d4a574, #e8c49a); border-radius: 2px; transition: width 0.4s ease; }
+
+  .filters { padding: 14px 32px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 16px; border-radius: 20px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .filter-btn.active { background: #003A70; color: white; }
+  .filter-btn:not(.active) { background: #e8ecf1; color: #444; }
+
+  .grid { padding: 18px 32px 32px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .card { background: white; border: 2px solid #e8ecf1; border-radius: 12px; padding: 20px 18px; text-align: left; cursor: pointer; transition: all 0.2s; position: relative; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,58,112,0.12); }
+  .card.explored { border-color: #003A70; }
+  .card .icon { font-size: 26px; }
+  .card .name { font-size: 15px; font-weight: 700; color: #003A70; }
+  .card .tagline { font-size: 12.5px; color: #666; line-height: 1.4; }
+  .card .cat { font-size: 11px; color: #999; margin-top: auto; padding-top: 6px; }
+  .badge { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px; }
+  .badge-preview { background: #fff3e0; color: #e65100; }
+  .badge-wip { background: #e3f2fd; color: #1565c0; }
+  .check { position: absolute; top: 10px; font-size: 13px; color: #003A70; }
+
+  .footer { text-align: center; padding: 8px 32px 20px; font-size: 11px; color: #aaa; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; animation: fadeIn 0.2s ease; }
+  .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 92vw); background: white; z-index: 101; box-shadow: -4px 0 24px rgba(0,0,0,0.15); overflow-y: auto; animation: slideIn 0.25s ease; }
+  .panel-header { background: linear-gradient(135deg, #003A70, #00275c); color: white; padding: 24px 28px; position: sticky; top: 0; z-index: 2; }
+  .panel-header .close { position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 18px; cursor: pointer; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .panel-header .p-icon { font-size: 32px; margin-bottom: 8px; }
+  .panel-header h2 { font-size: 22px; font-weight: 700; }
+  .panel-header .p-tag { margin-top: 4px; font-size: 13px; color: #b0c4de; }
+  .panel-header .status-badge { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 8px; color: #e8c49a; }
+  .panel-body { padding: 24px 28px 32px; display: flex; flex-direction: column; gap: 24px; }
+
+  .section-title { margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .section-title.navy { color: #003A70; }
+  .section-title.tan { color: #d4a574; }
+  .desc { font-size: 14px; line-height: 1.65; color: #333; }
+  .why-box { background: #f0f4f8; border-left: 3px solid #003A70; padding: 12px 16px; border-radius: 0 8px 8px 0; }
+  .step { display: flex; gap: 12px; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #003A70; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step-text { font-size: 13.5px; line-height: 1.55; color: #444; padding-top: 2px; }
+  .usecase-box { background: linear-gradient(135deg, #fdf8f3, #fef5ec); border: 1px solid #ecdcc8; padding: 16px; border-radius: 10px; }
+  .usecase-box p { font-size: 13.5px; line-height: 1.65; color: #4a3a28; }
+  .wip-box { background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 10px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; }
+  .wip-box .wip-icon { font-size: 18px; flex-shrink: 0; }
+  .wip-box .wip-title { font-size: 13px; font-weight: 600; color: #1565c0; }
+  .wip-box .wip-desc { margin-top: 4px; font-size: 12.5px; color: #37474f; line-height: 1.5; }
+  .na-box { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 10px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+  .na-box .na-icon { font-size: 22px; flex-shrink: 0; }
+  .na-box .na-title { font-size: 14px; font-weight: 700; color: #e65100; }
+  .na-box .na-desc { margin-top: 6px; font-size: 13px; color: #4e342e; line-height: 1.55; }
+  .resource-link { font-size: 13px; color: #003A70; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .resource-link .arrow { color: #d4a574; }
+  .nav-row { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #eee; }
+  .nav-btn { background: none; border: 1px solid #ddd; border-radius: 8px; padding: 8px 18px; font-size: 13px; color: #003A70; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+  .nav-btn:hover { background: #f0f4f8; }
+
+  .hidden { display: none; }
+  @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Claude Features to Know</h1>
+      <p class="subtitle">Click any feature to explore what it does and how to use it at Moody's</p>
+    </div>
+    <div class="tracker">
+      <div><span class="num" id="explored-count">0</span><span class="den"> / 12</span></div>
+      <div class="lbl">explored</div>
+    </div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+</div>
+
+<div class="filters" id="filters"></div>
+<div class="grid" id="grid"></div>
+<div class="footer">Moody's AI Enablement × Anthropic</div>
+
+<div class="overlay hidden" id="overlay"></div>
+<div class="panel hidden" id="panel"></div>
+
+<script>
+const features = [
+  { id:"projects", icon:"🌐", name:"Projects", tagline:"Persistent workspaces that carry context across every session", category:"Core",
+    description:"A Project is a dedicated, self-contained workspace where you can organize conversations, upload a custom knowledge base (up to 200K context window), and set specific instructions. Most AI interactions start from scratch every time — Projects solve that cold-start problem. Your files, instructions, and context persist across every conversation inside the Project.",
+    whyItMatters:"You stop re-uploading documents and re-explaining context every session. Claude already knows what you're working on, who you're working for, and how you like things done.",
+    steps:["Click the + icon in the sidebar and select 'New Project'","Upload your key reference files (PDFs, DOCX, CSVs) as project knowledge","Write custom instructions — define Claude's role, tone, and behavior for this workspace","Start a conversation inside the Project — Claude picks up your context automatically"],
+    useCase:"A Ratings analyst creates a Project for a specific issuer review. They upload the issuer's financials, prior rating reports, and sector benchmarks. Every conversation in that Project — drafting the rating rationale, checking peer comparisons, summarizing committee notes — starts with full context already loaded.",
+    resources:[{label:"Intro to Projects — Claude.com Tutorial",url:"https://www.youtube.com/watch?v=gAnS3O7DHnk"},{label:"What are Projects — Claude Support",url:"https://support.anthropic.com/en/articles/9517075-what-are-projects"}]},
+  { id:"skills", icon:"⚡", name:"Skills", tagline:"Reusable instruction packs that auto-load for specific tasks", category:"Core",
+    description:"A Skill is a reusable package of instructions that teaches Claude how to do something exactly the way you want — automatically, every time. A skill can contain saved prompts, templates, reference data, code scripts, and style guides. Claude auto-selects the right skill based on your request.",
+    whyItMatters:"The knowledge that lives in your head becomes part of your AI workflow. Instead of re-explaining your format, tone, and rules every session, you set it once and Claude executes consistently.",
+    steps:["Identify a recurring task you do regularly (e.g., weekly status updates, memo drafts)","Use Claude's built-in skill builder to create a SKILL.md file","Define the role (who Claude is), rules (what to do/avoid), and trigger (when it auto-loads)","Test, refine, and build a skill library over time"],
+    useCase:"A Product team builds a skill for writing weekly executive status updates. The skill defines the format (three sections: Progress, Blockers, Next Steps), the tone (concise, senior-audience), and the data sources to reference. Anyone on the team can generate a status update in the same voice without re-prompting.",
+    resources:[{label:"Intro to Agent Skills — Anthropic Course",url:"https://www.anthropic.com/courses/agent-skills"},{label:"What are Skills — Claude Support",url:"https://support.anthropic.com/en/articles/11147717-what-are-skills"},{label:"Skills Cookbook",url:"https://github.com/anthropics/anthropic-cookbook/tree/main/misc/skills"}]},
+  { id:"artifacts", icon:"📊", name:"Artifacts", tagline:"Interactive outputs you can use, edit, download, and share", category:"Core",
+    description:"Artifacts are standalone, self-contained outputs — code, documents, visualizations, interactive apps — displayed in a dedicated window alongside your chat. You can view, edit, iterate across versions, and copy or download with one click. Advanced capabilities include AI-powered apps, MCP integration, persistent storage, and publishing.",
+    whyItMatters:"Claude's work becomes directly usable. Build a budget tracker, a content calendar, a data dashboard, or a client-ready report without touching a spreadsheet or design tool — then share it with a colleague or stakeholder.",
+    steps:["Ask Claude to build something tangible — a calculator, a report, a dashboard, an interactive tool","Claude renders it in a panel alongside your chat — click to preview, edit, or iterate","Use 'Copy' or 'Download' to export, or publish to share with others","Iterate by asking Claude to refine — it versions automatically"],
+    useCase:"The People team asks Claude to build an interactive ROI calculator that estimates time saved per workflow. The artifact renders live in chat, gets refined with real data, and is published internally so business leads across MCO can plug in their own numbers.",
+    resources:[]},
+  { id:"connectors", icon:"🔗", name:"Connectors", tagline:"Claude searches your connected systems mid-chat — no uploading needed", category:"Core", wip:true,
+    description:"Connectors let Claude search your connected enterprise systems — SharePoint, Google Drive, Confluence, and more — directly during a conversation. Your data stays where it is; Claude comes to it. No uploading files, no screenshots, no copy-pasting.",
+    whyItMatters:"You get answers grounded in your actual organizational knowledge without the friction of finding, downloading, and uploading documents first. Claude pulls from your systems in real time.",
+    steps:["Go to Settings → Connectors and authenticate the systems you want Claude to access","Start a conversation and ask a question that references your internal data","Claude searches your connected systems and references what it finds","Combine with web search for answers that blend internal and external knowledge"],
+    useCase:"A Finance team member asks Claude to summarize the latest quarterly planning doc. Claude searches the connected SharePoint sites, finds the document, and provides a summary — no one had to download, rename, or upload anything.",
+    resources:[]},
+  { id:"plugins", icon:"🧩", name:"Plug-ins", tagline:"Pre-configured specialist packs with the right tools and context already loaded", category:"Core", wip:true,
+    description:"Plug-ins are domain-specific packages with the right tools and context already wired in. Your team doesn't have to figure out prompting or setup — Claude already knows how your practice area works. Think of them as turnkey solutions for specific functions.",
+    whyItMatters:"Plug-ins lower the barrier to adoption. Instead of asking every analyst to learn prompt engineering, you deploy a plug-in that already knows the workflow, the data sources, and the output format.",
+    steps:["Browse available plug-ins in the Claude interface (look for the plug-in icon)","Enable a plug-in relevant to your workflow — it loads automatically when the task matches","Claude uses the plug-in's built-in tools and context to handle your request","Combine with Projects for domain-specific workspaces with plug-in capabilities"],
+    useCase:"The Moody's Connector plug-in gives Claude access to proprietary credit ratings and entity intelligence. A credit analyst asks Claude about an issuer's rating history and gets answers sourced directly from Moody's data — no separate portal lookup required.",
+    resources:[]},
+  { id:"extended-thinking", icon:"🧠", name:"Extended Thinking", tagline:"Deeper reasoning mode for complex, high-stakes work", category:"Modes",
+    description:"In Extended Thinking mode, Claude works through a problem step by step before responding — self-reflecting, checking assumptions, and structuring its reasoning. This improves performance on math, instruction-following, coding, and complex analytical tasks.",
+    whyItMatters:"For financial models, legal analysis, investment decisions, and any situation where a thorough answer matters more than a fast one, Extended Thinking produces significantly better outputs. It's the difference between a quick take and a considered analysis.",
+    steps:["Toggle Extended Thinking on using the settings icon in the chat input bar","Ask your question — you'll see a 'Thinking' indicator while Claude reasons through the problem","Review Claude's response, which reflects deeper analysis and structured reasoning","Extended Thinking is on by default when Research mode is enabled"],
+    useCase:"An MA sales lead is preparing for a renewal with a client who uses three overlapping Moody's products. Extended Thinking lets Claude systematically analyze usage patterns across the products, identify where coverage overlaps or gaps exist, model the impact of consolidating into a bundled offering versus maintaining separate subscriptions, and surface talking points that address likely client pushback — all before the prep call.",
+    resources:[{label:"Extended Thinking — Claude Support",url:"https://support.anthropic.com/en/articles/10167029-what-is-extended-thinking-and-how-do-i-use-it"}]},
+  { id:"model-selection", icon:"🎛️", name:"Model Selection", tagline:"Three tiers — pick the right engine for the task", category:"Modes",
+    description:"Claude offers three model tiers: Haiku 4.5 (fastest, most economical, near-frontier intelligence), Sonnet 4.6 (best balance of speed and intelligence — the everyday workhorse), and Opus 4.6 (the most intelligent model, built for agents, coding, and professional-grade work). Choosing the right model means balancing capability, speed, and cost.",
+    whyItMatters:"Not every task needs the most powerful model. Quick lookups and drafts run great on Haiku. Day-to-day analysis and writing hit a sweet spot on Sonnet. Reserve Opus for deep reasoning, complex code, and high-stakes deliverables.",
+    steps:["Look at the model selector in the top-right of the chat interface","Default to Sonnet 4.6 for most work — it handles the vast majority of tasks well","Switch to Opus 4.6 for complex reasoning, multi-step analysis, or professional-grade outputs","Use Haiku 4.5 for quick tasks, high-volume processing, or when speed is the priority"],
+    useCase:"An MA research team uses Sonnet for daily report summarization and data extraction. When they need to build a complex financial model or draft a methodology paper with rigorous internal logic, they switch to Opus for the added reasoning depth.",
+    resources:[]},
+  { id:"memory", icon:"💬", name:"Memory", tagline:"Claude remembers your preferences and decisions across conversations", category:"Modes",
+    description:"Memory allows Claude to retain relevant context across conversations — your preferences, recurring workflows, project decisions, and working style. You stop re-explaining yourself every session. Claude builds on what it already knows about how you work.",
+    whyItMatters:"Continuity changes how you use AI. Instead of treating every chat as a fresh start, Claude becomes a working partner that already knows your format preferences, your team's terminology, and the decisions you've already made.",
+    steps:["Enable Memory in Settings → Profile","Use Claude normally — it will start noting relevant preferences and context","Review what Claude has remembered at any time in your settings","Memory applies across conversations but can be managed or cleared as needed"],
+    useCase:"A Corporate Affairs team member regularly builds executive slide decks. After a few sessions, Claude remembers their preferred structure (situation → insight → recommendation), their formatting rules, and the acronyms specific to their business unit — no re-prompting needed.",
+    resources:[]},
+  { id:"claude-in-chrome", icon:"🌍", name:"Claude in Chrome", tagline:"A browsing agent that takes actions directly in your browser", category:"Agents",
+    description:"Claude in Chrome is a browsing agent that operates inside your Chrome browser. It can navigate websites, read pages, click buttons, fill out forms, and complete web-based tasks on your behalf. It automates research, data gathering, and repetitive web workflows.",
+    whyItMatters:"Instead of manually clicking through web portals, copying data between tabs, or filling out repetitive forms, Claude handles the browser work while you focus on higher-value tasks.",
+    steps:["Install the Claude for Chrome extension from the Chrome Web Store","Open Claude in Chrome from the extension icon in your browser toolbar","Give Claude a task — it will navigate, read, and interact with web pages on your behalf","Review Claude's actions and results before confirming any submissions"],
+    useCase:"A TSG team member needs to audit vendor pricing across five different procurement portals. Claude in Chrome navigates each site, extracts the relevant pricing tables, and compiles a comparison — a task that would normally take an hour of manual tab-switching.",
+    resources:[{label:"Claude for Chrome — Product Page",url:"https://www.anthropic.com/claude/chrome"}]},
+  { id:"claude-in-powerpoint", icon:"📑", name:"Claude in PowerPoint", tagline:"A slides agent that builds and edits presentations directly in PowerPoint", category:"Agents",
+    description:"Claude in PowerPoint works directly inside Microsoft PowerPoint as an integrated agent. It can build presentations from a brief, an outline, or existing content — and refine them using your templates. It handles layout, content structuring, and formatting without leaving the app.",
+    whyItMatters:"Deck-building is one of the highest-time-cost tasks in professional services. Claude in PowerPoint turns a rough brief into a structured, formatted presentation — so you spend time on the thinking, not the arranging.",
+    steps:["Open PowerPoint and look for the Claude add-in in the ribbon","Provide a brief, outline, or existing content you want turned into slides","Claude generates or refines the presentation within your PowerPoint environment","Iterate by giving Claude feedback — it edits slides in place"],
+    useCase:"A Ratings team lead needs to prepare a committee presentation summarizing an issuer's credit profile. They paste their notes into Claude in PowerPoint, which generates a structured deck using the Moody's branded template — executive summary, key financials, risk factors, and recommendation.",
+    resources:[{label:"Claude for PowerPoint",url:"https://support.anthropic.com/en/articles/11360287-using-claude-in-powerpoint"}]},
+  { id:"claude-in-excel", icon:"📈", name:"Claude in Excel", tagline:"An add-in that reads your live spreadsheet — formulas, cells, and all", category:"Agents",
+    description:"Claude in Excel is an add-in that reads your actual formulas, cell references, and data. It works with the live spreadsheet — not a copy, not a paste. It can write formulas, build pivot tables, apply conditional formatting, and help you analyze data without leaving Excel.",
+    whyItMatters:"Instead of describing your spreadsheet to Claude in a separate chat, Claude sees the actual data. It understands your structure, references, and formulas — and makes changes directly in your workbook.",
+    steps:["Install the Claude for Excel add-in from the Office Add-ins store","Open a spreadsheet and launch Claude from the add-in panel","Ask Claude to write formulas, create charts, build pivot tables, or analyze your data","Claude reads your live cells and makes edits directly — review and accept changes"],
+    useCase:"A Finance team analyst has a complex budget model with nested formulas. They ask Claude in Excel to add a variance analysis column and apply conditional formatting to flag items exceeding 10% of plan. Claude reads the existing structure and builds on it — no copy-paste, no broken references.",
+    resources:[{label:"Claude for Excel",url:"https://support.anthropic.com/en/articles/11360284-using-claude-in-excel"}]},
+  { id:"cowork", icon:"🗂️", name:"Cowork", tagline:"A desktop tool that reads and writes files directly to your folders", category:"Agents", preview:true, notAvailable:true,
+    description:"Cowork is a desktop tool that reads and writes your files directly into your local folders. Not a download. Not a copy-paste. The file lands where your work lives. It bridges the gap between AI-generated outputs and your actual file system.",
+    whyItMatters:"Today, getting AI output into your workflow requires downloading, renaming, and moving files. Cowork eliminates that friction — Claude's output goes straight to the right folder in the right format.",
+    steps:[],
+    useCase:null,
+    resources:[]}
+];
+
+const catLabels = { Core:"Core Features", Modes:"Modes & Settings", Agents:"Agents & Integrations" };
+const allCats = ["All","Core","Modes","Agents"];
+let explored = {};
+let currentFilter = "All";
+let selectedIdx = null;
+
+function render() {
+  // Filters
+  const fDiv = document.getElementById("filters");
+  fDiv.innerHTML = "";
+  allCats.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "filter-btn" + (currentFilter === c ? " active" : "");
+    b.textContent = c === "All" ? "All Features" : catLabels[c];
+    b.onclick = () => { currentFilter = c; render(); };
+    fDiv.appendChild(b);
+  });
+
+  // Grid
+  const g = document.getElementById("grid");
+  g.innerHTML = "";
+  const filtered = currentFilter === "All" ? features : features.filter(f => f.category === currentFilter);
+  filtered.forEach((f, i) => {
+    const realIdx = features.indexOf(f);
+    const card = document.createElement("div");
+    card.className = "card" + (explored[f.id] ? " explored" : "");
+    const badgeRight = (f.preview || f.wip) ? 90 : 12;
+    let badges = "";
+    if (f.preview) badges += '<span class="badge badge-preview">PREVIEW</span>';
+    if (f.wip) badges += '<span class="badge badge-wip">ROLLING OUT</span>';
+    if (explored[f.id]) badges += '<span class="check" style="right:' + badgeRight + 'px">✓</span>';
+    card.innerHTML = badges +
+      '<span class="icon">' + f.icon + '</span>' +
+      '<span class="name">' + f.name + '</span>' +
+      '<span class="tagline">' + f.tagline + '</span>' +
+      '<span class="cat">' + catLabels[f.category] + '</span>';
+    card.onclick = () => openPanel(realIdx);
+    g.appendChild(card);
+  });
+
+  // Tracker
+  const cnt = Object.keys(explored).length;
+  document.getElementById("explored-count").textContent = cnt;
+  document.getElementById("progress-bar").style.width = (cnt / features.length * 100) + "%";
+}
+
+function openPanel(idx) {
+  selectedIdx = idx;
+  const f = features[idx];
+  explored[f.id] = true;
+
+  const overlay = document.getElementById("overlay");
+  const panel = document.getElementById("panel");
+  overlay.className = "overlay";
+  panel.className = "panel";
+
+  // Build panel content
+  let html = '<div class="panel-header">' +
+    '<button class="close" onclick="closePanel()">×</button>' +
+    '<div class="p-icon">' + f.icon + '</div>' +
+    '<h2>' + f.name + '</h2>' +
+    '<p class="p-tag">' + f.tagline + '</p>';
+  if (f.preview) html += '<span class="status-badge">Preview — Not yet available at Moody\'s</span>';
+  html += '</div><div class="panel-body">';
+
+  // Not available banner
+  if (f.notAvailable) {
+    html += '<div class="na-box"><span class="na-icon">🚫</span><div><p class="na-title">Not Available at Moody\'s</p><p class="na-desc">Cowork is currently an Anthropic preview feature and is not available in the Moody\'s environment. There is no confirmed timeline for availability.</p></div></div>';
+  }
+
+  // WIP banner
+  if (f.wip) {
+    html += '<div class="wip-box"><span class="wip-icon">🚧</span><div><p class="wip-title">Work in Progress at Moody\'s</p><p class="wip-desc">This capability is being rolled out in phases and some integrations may not be available today, with more being enabled throughout the year.</p></div></div>';
+  }
+
+  // What it is
+  html += '<div><h3 class="section-title navy">What It Is</h3><p class="desc">' + f.description + '</p></div>';
+
+  // Why it matters
+  html += '<div><h3 class="section-title navy">Why It Matters</h3><div class="why-box"><p class="desc">' + f.whyItMatters + '</p></div></div>';
+
+  // How to get started
+  if (!f.notAvailable && f.steps.length > 0) {
+    html += '<div><h3 class="section-title navy">How to Get Started</h3><div style="display:flex;flex-direction:column;gap:10px">';
+    f.steps.forEach((s, i) => {
+      html += '<div class="step"><span class="step-num">' + (i+1) + '</span><p class="step-text">' + s + '</p></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Use case
+  if (f.useCase) {
+    html += '<div><h3 class="section-title tan">Moody\'s Use Case</h3><div class="usecase-box"><p>' + f.useCase + '</p></div></div>';
+  }
+
+  // Resources
+  if (f.resources && f.resources.length > 0) {
+    html += '<div><h3 class="section-title navy">Resources</h3><div style="display:flex;flex-direction:column;gap:8px">';
+    f.resources.forEach(r => {
+      html += '<a class="resource-link" href="' + r.url + '" target="_blank" rel="noopener noreferrer"><span class="arrow">→</span> ' + r.label + '</a>';
+    });
+    html += '</div></div>';
+  }
+
+  // Nav
+  html += '<div class="nav-row"><button class="nav-btn" onclick="navPrev()">← Previous</button><button class="nav-btn" onclick="navNext()">Next →</button></div>';
+  html += '</div>';
+
+  panel.innerHTML = html;
+  render();
+}
+
+function closePanel() {
+  document.getElementById("overlay").className = "overlay hidden";
+  document.getElementById("panel").className = "panel hidden";
+  selectedIdx = null;
+}
+
+function navPrev() {
+  const prev = (selectedIdx - 1 + features.length) % features.length;
+  openPanel(prev);
+}
+
+function navNext() {
+  const next = (selectedIdx + 1) % features.length;
+  openPanel(next);
+}
+
+document.getElementById("overlay").onclick = closePanel;
+render();
+</script>
